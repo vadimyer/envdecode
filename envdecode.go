@@ -57,8 +57,8 @@ type Decoder interface {
 // time.ParseDuration() function and *url.URL is supported via the
 // url.Parse() function. Slices are supported for all above mentioned
 // primitive types. Semicolon is used as delimiter in environment variables.
-func Decode(target interface{}) error {
-	nFields, err := decode(target, false)
+func Decode(envPrefix string, target interface{}) error {
+	nFields, err := decode(envPrefix, target, false)
 	if err != nil {
 		return err
 	}
@@ -74,8 +74,8 @@ func Decode(target interface{}) error {
 
 // StrictDecode is similar to Decode except all fields will have an implicit
 // ",strict" on all fields.
-func StrictDecode(target interface{}) error {
-	nFields, err := decode(target, true)
+func StrictDecode(envPrefix string, target interface{}) error {
+	nFields, err := decode(envPrefix, target, true)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func StrictDecode(target interface{}) error {
 	return nil
 }
 
-func decode(target interface{}, strict bool) (int, error) {
+func decode(envPrefix string, target interface{}, strict bool) (int, error) {
 	s := reflect.ValueOf(target)
 	if s.Kind() != reflect.Ptr || s.IsNil() {
 		return 0, ErrInvalidTarget
@@ -128,7 +128,7 @@ func decode(target interface{}, strict bool) (int, error) {
 				break
 			}
 
-			n, err := decode(ss, strict)
+			n, err := decode(envPrefix, ss, strict)
 			if err != nil {
 				return 0, err
 			}
@@ -145,7 +145,7 @@ func decode(target interface{}, strict bool) (int, error) {
 		}
 
 		parts := strings.Split(tag, ",")
-		env := os.Getenv(parts[0])
+		env := os.Getenv(envPrefix + "_" + parts[0])
 
 		required := false
 		hasDefault := false
@@ -275,8 +275,8 @@ func decodePrimitiveType(f *reflect.Value, env string) error {
 
 // MustDecode calls Decode and terminates the process if any errors
 // are encountered.
-func MustDecode(target interface{}) {
-	err := Decode(target)
+func MustDecode(envPrefix string, target interface{}) {
+	err := Decode(envPrefix, target)
 	if err != nil {
 		FailureFunc(err)
 	}
@@ -284,8 +284,8 @@ func MustDecode(target interface{}) {
 
 // MustStrictDecode calls StrictDecode and terminates the process if any errors
 // are encountered.
-func MustStrictDecode(target interface{}) {
-	err := StrictDecode(target)
+func MustStrictDecode(envPrefix string, target interface{}) {
+	err := StrictDecode(envPrefix, target)
 	if err != nil {
 		FailureFunc(err)
 	}
