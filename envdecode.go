@@ -66,7 +66,7 @@ func Decode(envPrefix string, target interface{}) error {
 	// if we didn't do anything - the user probably did something
 	// wrong like leave all fields unexported.
 	if nFields == 0 {
-		return ErrNoTargetFieldsAreSet
+		// return ErrNoTargetFieldsAreSet
 	}
 
 	return nil
